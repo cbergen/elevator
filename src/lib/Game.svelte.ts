@@ -23,7 +23,7 @@ export class Game {
 	public meeples: Meeple[] = [];
 
 	// Constants
-	public floorHeight: string = '50px';
+	public floorHeight: number = 50;
 
 	constructor(opts: GameOptions) {
 		// Set floors
@@ -80,9 +80,9 @@ export class Game {
 			this.elapsedSinceSpawn = 0;
 		}
 
-		// Push buttons on floors
+		// Update floor timers
 		this.floors.forEach((floor) => {
-			floor.pushButtons();
+			floor.update(deltaTime);
 		});
 
 		// Update meeple timers
@@ -90,11 +90,11 @@ export class Game {
 			meeple.update(deltaTime);
 		});
 
-		// Move elevators
+		// TODO: Move elevators
 
-		// Move meeples into elevators
+		// TODO: Move meeples into elevators
 
-		// Move meeples out of elevators
+		// TODO: Move meeples out of elevators
 	};
 
 	private render = (): void => {
@@ -115,13 +115,13 @@ export class Game {
 
 	private spawnMeeple = (): void => {
 		// High chance of spawning a meeple on the ground floor
-		const floor = Math.random() < 0.5 ? 1 : randomIntFromInterval(2, this.floors.length);
+		const floor = Math.random() < 0.55 ? 1 : randomIntFromInterval(2, this.floors.length);
 
 		// Destination floor.
 		let destination: number;
 
 		// If floor is not bottom floor there's a better chance of going to the first floor
-		if (floor > 1 && Math.random() < 0.5) {
+		if (floor > 1 && Math.random() < 0.7) {
 			destination = 1;
 		} else {
 			do {

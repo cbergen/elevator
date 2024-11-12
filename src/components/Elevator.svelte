@@ -1,9 +1,16 @@
 <script lang="ts">
 	let { elevator, game }: any = $props();
+
+	let floorNumber: number = 2.5 - 1;
+	let y: string = -1 * floorNumber * game.floorHeight + 'px';
 </script>
 
-<div class="shaft" style:--numFloors={game.floors.length} style:--floorHeight={game.floorHeight}>
-	<div class="cab"></div>
+<div
+	class="shaft"
+	style:--numFloors={game.floors.length}
+	style:--floorHeight={game.floorHeight + 'px'}
+>
+	<div class="cab" style:--y={y}></div>
 </div>
 
 <style>
@@ -20,5 +27,7 @@
 		background-color: rgba(0, 200, 0, 0.5);
 
 		transition: all 0.5s linear;
+
+		transform: translateY(var(--y));
 	}
 </style>

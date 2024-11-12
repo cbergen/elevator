@@ -24,13 +24,18 @@ export class Floor {
 			this.downQueue.push(meeple);
 		}
 
-		console.log({
-			floor: this.number,
-			going: `${meeple.destination} (${direction})`
-		});
+		// console.log({
+		// 	floor: this.number,
+		// 	going: `${meeple.destination} (${direction})`
+		// });
 	};
 
-	public pushButtons = (): void => {
+	public update = (sec: number): void => {
+		// Push buttons
+		this.pushButtons();
+	};
+
+	private pushButtons = (): void => {
 		// If there are meeples in the up queue, set the up indicator to true
 		if (this.upQueue.length > 0) {
 			// Only set the indicator if there is a meeple in "waiting" state

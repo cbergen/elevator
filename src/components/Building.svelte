@@ -5,7 +5,11 @@
 	let { game }: any = $props();
 </script>
 
-<div class="building" style:--floorHeight={game.floorHeight} style:--numFloors={game.floors.length}>
+<div
+	class="building"
+	style:--floorHeight={game.floorHeight + 'px'}
+	style:--numFloors={game.floors.length}
+>
 	{#each game.floors as floor, i}
 		<Floor {floor} {game}></Floor>
 	{/each}

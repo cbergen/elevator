@@ -7,11 +7,11 @@
 <section
 	data-floor={floor.number}
 	style:--numElevators={numElevators}
-	style:--floorHeight={game.floorHeight}
+	style:--floorHeight={game.floorHeight + 'px'}
 >
 	<div class="queue">
 		<div class="meeples">
-			{floor.meepleCount}
+			{floor.meepleCount || ''}
 		</div>
 
 		<div class="lights">
