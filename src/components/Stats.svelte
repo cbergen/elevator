@@ -10,17 +10,21 @@
 </script>
 
 <dl>
-	<dt>Elapsed time</dt>
-	<dd>{formatElapsedTime(game.elapsedTime)}</dd>
+	<div>
+		<dt>Elapsed time</dt>
+		<dd>{formatElapsedTime(game.elapsedTime)}</dd>
+	</div>
+
+	<div>
+		<dt>Longest time waiting</dt>
+		<dd>{formatElapsedTime(game.longestTimeWaiting)}</dd>
+	</div>
 </dl>
 
 <style>
-	dl {
+	dl > div {
 		display: flex;
 		font-family: monospace;
-	}
-
-	dt {
 	}
 
 	dd {

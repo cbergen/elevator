@@ -18,8 +18,7 @@ declare global {
 		number: number;
 		upIndicator: boolean;
 		downIndicator: boolean;
-		meeplesUpQueue: [];
-		meeplesDownQueue: [];
+		queue: [];
 	}
 }
 

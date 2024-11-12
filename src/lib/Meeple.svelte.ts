@@ -1,12 +1,13 @@
 export class Meeple {
 	public destination: number = 1;
-
+	public originFloor: number = 1;
+	public direction = $derived(this.destination > this.originFloor ? 'up' : 'down');
 	public location: 'floor' | 'waiting' | 'elevator' | 'exiting' | 'gone' = 'floor';
 
 	// Timers
 	private elapsedSinceSpawn: number = 0;
-	private waitingTime: number = 0;
 	private elapsedSinceExited: number = 0;
+	public waitingTime: number = 0;
 
 	constructor(destination: number) {
 		this.destination = destination;
@@ -18,7 +19,7 @@ export class Meeple {
 				// console.log('Meeple is on the floor');
 				this.elapsedSinceSpawn += sec;
 
-				if (this.elapsedSinceSpawn > 2) {
+				if (this.elapsedSinceSpawn > 0.5) {
 					this.location = 'waiting';
 				}
 

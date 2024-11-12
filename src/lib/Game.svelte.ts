@@ -1,3 +1,4 @@
+import { Elevator } from './Elevator.svelte';
 import { Floor } from './Floor.svelte';
 import { Meeple } from './Meeple.svelte';
 
@@ -9,6 +10,7 @@ function randomIntFromInterval(min: number, max: number): number {
 export class Game {
 	// Game stats
 	public elapsedTime: number = $state(0);
+	public longestTimeWaiting: number = $state(0);
 
 	// Loop variables
 	private intervalID: number = 0;
@@ -19,7 +21,7 @@ export class Game {
 
 	// Game objects
 	public floors: Floor[] = [];
-	public elevators: { number: number }[] = [];
+	public elevators: Elevator[] = [];
 	public meeples: Meeple[] = [];
 
 	// Constants
@@ -33,15 +35,14 @@ export class Game {
 
 		// Set elevators
 		for (let i = 0; i < opts.numElevators; i++) {
-			this.elevators.push({
-				number: i + 1
-			});
+			this.elevators.push(new Elevator());
 		}
 
+		// More floors, more meeples
 		this.meepleSpawnFrequency = 5 / (this.floors.length / 2);
 	}
 
-	start = (): void => {
+	public start = (): void => {
 		if (this.intervalID > 0) return;
 
 		console.log('Game started');
@@ -49,7 +50,7 @@ export class Game {
 		this.intervalID = setInterval(this.loop.bind(this), this.ms);
 	};
 
-	pause = (): void => {
+	public pause = (): void => {
 		if (this.intervalID === 0) return;
 
 		console.log('Game paused');
@@ -57,16 +58,20 @@ export class Game {
 		this.intervalID = 0;
 	};
 
-	reset = (): void => {
+	public reset = (): void => {
 		console.log('Game reset');
 		clearInterval(this.intervalID);
 		this.intervalID = 0;
 		this.elapsedTime = 0;
+		this.longestTimeWaiting = 0;
 		this.lastRunTime = 0;
 		this.elapsedSinceSpawn = 0;
 		this.meeples = [];
 		this.floors.forEach((floor) => {
 			floor.reset();
+		});
+		this.elevators.forEach((elevator) => {
+			elevator.reset();
 		});
 	};
 
@@ -88,11 +93,25 @@ export class Game {
 		// Update meeple timers
 		this.meeples.forEach((meeple) => {
 			meeple.update(deltaTime);
+
+			// Get longest waiting time
+			if (meeple.waitingTime > this.longestTimeWaiting) {
+				this.longestTimeWaiting = meeple.waitingTime;
+			}
+		});
+
+		// Move meeples into elevators
+		// For each elevator stopped at a floor, load meeples
+		this.elevators.forEach((elevator) => {
+			if (elevator.isMoving) return;
+
+			// Get the floor the elevator is stopped at
+			const floor = this.floors.find((f) => f.number === elevator.floor) as Floor;
+
+			floor.loadElevator(elevator);
 		});
 
 		// TODO: Move elevators
-
-		// TODO: Move meeples into elevators
 
 		// TODO: Move meeples out of elevators
 	};
