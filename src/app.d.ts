@@ -8,6 +8,19 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	interface GameOptions {
+		numFloors: number;
+		numElevators: number;
+	}
+
+	interface Floor {
+		number: number;
+		upIndicator: boolean;
+		downIndicator: boolean;
+		meeplesUpQueue: [];
+		meeplesDownQueue: [];
+	}
 }
 
 export {};
