@@ -1,10 +1,12 @@
 import type { Meeple } from './Meeple.svelte';
+import { SvelteSet } from 'svelte/reactivity';
 
 // TODO: use anime.js to animate the elevator
 
 export class Elevator {
 	public floor: number = 1;
 	public direction: 'up' | 'down' | 'idle' = 'idle';
+	public pressedFloors: SvelteSet<number> = $state(new SvelteSet());
 	public isMoving: boolean = false;
 	public occupants: Meeple[] = $state([]);
 	private capacity: number = 5;
@@ -44,8 +46,20 @@ export class Elevator {
 
 	private enter = (meeple: Meeple): void => {
 		// TODO: animate the meeple entering the elevator
+
 		// Set the meeple's location to 'elevator'
+		meeple.location = 'elevator';
+
 		// Add the meeple to the occupants array
-		// Push the COP button for the meeple's destination floor
+		this.occupants.push(meeple);
+
+		// Push the button for the meeple's destination floor if floor light isn't already lit
+		if (!this.pressedFloors.has(meeple.destination)) {
+			this.pushFloorButton(meeple.destination);
+		}
+	};
+
+	private pushFloorButton = (floor: number): void => {
+		this.pressedFloors.add(floor);
 	};
 }
