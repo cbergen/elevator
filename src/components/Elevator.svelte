@@ -1,8 +1,11 @@
 <script lang="ts">
 	let { elevator, game }: any = $props();
 
-	let floorNumber: number = 1 - 1;
-	let y: string = -1 * floorNumber * game.floorHeight + 'px';
+	let floorNumber: number = elevator.floor;
+	let y: string = -1 * (floorNumber - 1) * game.floorHeight + 'px';
+
+	// $inspect(elevator);
+	// $inspect({ floorNumber });
 </script>
 
 <div
@@ -23,6 +26,8 @@
 
 		<div class="occupantCount">
 			{elevator.occupants.length || ''}
+
+			<br />fl. {floorNumber}
 		</div>
 	</div>
 </div>

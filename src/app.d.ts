@@ -20,6 +20,10 @@ declare global {
 		downIndicator: boolean;
 		queue: [];
 	}
+
+	interface Callback {
+		(): void;
+	}
 }
 
 export {};

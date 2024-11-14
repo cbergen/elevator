@@ -27,6 +27,11 @@ export class Game {
 	// Constants
 	public floorHeight: number = 50;
 
+	// User code
+	public userCodeString: string = $state('');
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	public userCode: any;
+
 	constructor(opts: GameOptions) {
 		// Set floors
 		for (let i = 1; i <= opts.numFloors; i++) {
@@ -35,7 +40,11 @@ export class Game {
 
 		// Set elevators
 		for (let i = 0; i < opts.numElevators; i++) {
-			this.elevators.push(new Elevator());
+			this.elevators.push(
+				new Elevator({
+					topFloor: opts.numFloors
+				})
+			);
 		}
 
 		// More floors, more meeples
@@ -48,6 +57,11 @@ export class Game {
 		console.log('Game started');
 		this.lastRunTime = Date.now();
 		this.intervalID = setInterval(this.loop.bind(this), this.ms);
+
+		// Run user code
+		if (!this.userCode) {
+			this.runUserCode();
+		}
 	};
 
 	public pause = (): void => {
@@ -73,6 +87,7 @@ export class Game {
 		this.elevators.forEach((elevator) => {
 			elevator.reset();
 		});
+		this.userCode = undefined;
 	};
 
 	private update = (deltaTime: number): void => {
@@ -100,10 +115,16 @@ export class Game {
 			}
 		});
 
+		// Update elevator timers
+		this.elevators.forEach((elevator) => {
+			elevator.update(deltaTime);
+		});
+
 		// Move meeples into elevators
 		// For each elevator stopped at a floor, load meeples
 		this.elevators.forEach((elevator) => {
-			if (elevator.isMoving) return;
+			// If elevator is moving, skip
+			if (elevator.movement === 'moving') return;
 
 			// Get the floor the elevator is stopped at
 			const floor = this.floors.find((f) => f.number === elevator.floor) as Floor;
@@ -156,5 +177,29 @@ export class Game {
 		// Add the meeple to the floor's queue
 		const floorIndex = this.floors.findIndex((f) => f.number === floor);
 		this.floors[floorIndex].addMeeple(meeple);
+	};
+
+	private runUserCode = (): void => {
+		let code = this.userCodeString;
+		code = '(' + code + ')';
+
+		// if (code.trim().substr(0, 1) == '{' && code.trim().substr(-1, 1) == '}') {
+		// }
+
+		console.log('Code:', code);
+
+		// /* jslint evil:true */
+		this.userCode = eval(code);
+		// /* jshint evil:false */
+
+		// // check that the code includes the init function
+		// if (typeof obj.init !== 'function') {
+		// 	throw 'Code must contain an init function';
+		// }
+		// // if (typeof obj.update !== 'function') {
+		// // 	throw 'Code must contain an update function';
+		// // }
+
+		this.userCode.init(this.elevators, this.floors);
 	};
 }

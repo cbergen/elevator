@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Game } from '$lib/Game.svelte';
 	import Building from '$components/Building.svelte';
+	import Editor from '$components/Editor.svelte';
 	import Stats from '$components/Stats.svelte';
 
 	const level_1 = {
@@ -16,11 +17,13 @@
 
 	<button on:click={game.start}>Play</button>
 	<button on:click={game.pause}>Pause</button>
-	<button on:click={game.reset}>Reset</button>
+	<button on:click={game.reset}>Reload code</button>
 </header>
 
 <main>
 	<Building {game}></Building>
+
+	<Editor {game}></Editor>
 </main>
 
 <style>
