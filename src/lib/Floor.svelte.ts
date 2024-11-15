@@ -53,8 +53,60 @@ export class Floor {
 		this.downIndicator = false;
 	};
 
-	public loadElevator = (elevator: Elevator): void => {
-		// Attempt to load each person in the queue into the elevator
-		this.queue = elevator.load(this.queue);
+	public maybeLoadElevators = (elevators: Elevator[]): void => {
+		elevators.forEach((elevator) => {
+			// If the queue is empty, skip
+			if (this.queue.length === 0) {
+				return;
+			}
+
+			// If elevator is moving, skip
+			if (elevator.movement === 'moving') {
+				return;
+			}
+
+			// If elevator is not stopped at this floor, skip
+			if (elevator.floor !== this.number) {
+				return;
+			}
+
+			// Try to load the elevator
+			if (elevator.hasCapacity()) {
+				this.queue.forEach((meeple) => {
+					if (elevator.direction === null || elevator.direction === meeple.direction) {
+						elevator.load(meeple);
+
+						// Remove the meeple from the queue
+						this.queue = this.queue.filter((m) => m !== meeple);
+					}
+				});
+			}
+		});
+	};
+
+	public maybeUnloadElevators = (elevators: Elevator[]): void => {
+		elevators.forEach((elevator) => {
+			// If elevator is empty, skip
+			if (elevator.occupants.length === 0) {
+				return;
+			}
+
+			// If elevator is moving, skip
+			if (elevator.movement === 'moving') {
+				return;
+			}
+
+			// If elevator is not stopped at this floor, skip
+			if (elevator.floor !== this.number) {
+				return;
+			}
+
+			// Try to unload the elevator
+			elevator.occupants.forEach((meeple) => {
+				if (meeple.destination === this.number) {
+					elevator.unload(meeple);
+				}
+			});
+		});
 	};
 }

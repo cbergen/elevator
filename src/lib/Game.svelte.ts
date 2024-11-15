@@ -14,7 +14,6 @@ export class Game {
 
 	// Loop variables
 	private intervalID: number = 0;
-	private ms: number = 125;
 	private lastRunTime: number = 0;
 	private elapsedSinceSpawn: number = 0;
 	private meepleSpawnFrequency: number = 2; // seconds
@@ -55,26 +54,28 @@ export class Game {
 		if (this.intervalID > 0) return;
 
 		console.log('Game started');
-		this.lastRunTime = Date.now();
-		this.intervalID = setInterval(this.loop.bind(this), this.ms);
 
 		// Run user code
 		if (!this.userCode) {
 			this.runUserCode();
 		}
+
+		this.lastRunTime = Date.now();
+
+		this.loop();
 	};
 
 	public pause = (): void => {
 		if (this.intervalID === 0) return;
 
 		console.log('Game paused');
-		clearInterval(this.intervalID);
+		window.cancelAnimationFrame(this.intervalID);
 		this.intervalID = 0;
 	};
 
 	public reset = (): void => {
 		console.log('Game reset');
-		clearInterval(this.intervalID);
+		window.cancelAnimationFrame(this.intervalID);
 		this.intervalID = 0;
 		this.elapsedTime = 0;
 		this.longestTimeWaiting = 0;
@@ -103,6 +104,12 @@ export class Game {
 		// Update floor timers
 		this.floors.forEach((floor) => {
 			floor.update(deltaTime);
+
+			// Unload elevators
+			floor.maybeUnloadElevators(this.elevators);
+
+			// Load elevators
+			floor.maybeLoadElevators(this.elevators);
 		});
 
 		// Update meeple timers
@@ -119,22 +126,6 @@ export class Game {
 		this.elevators.forEach((elevator) => {
 			elevator.update(deltaTime);
 		});
-
-		// Move meeples into elevators
-		// For each elevator stopped at a floor, load meeples
-		this.elevators.forEach((elevator) => {
-			// If elevator is moving, skip
-			if (elevator.movement === 'moving') return;
-
-			// Get the floor the elevator is stopped at
-			const floor = this.floors.find((f) => f.number === elevator.floor) as Floor;
-
-			floor.loadElevator(elevator);
-		});
-
-		// TODO: Move elevators
-
-		// TODO: Move meeples out of elevators
 	};
 
 	private render = (): void => {
@@ -151,6 +142,8 @@ export class Game {
 
 		this.update(deltaTime);
 		this.render();
+
+		this.intervalID = window.requestAnimationFrame(this.loop.bind(this));
 	};
 
 	private spawnMeeple = (): void => {

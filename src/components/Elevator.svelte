@@ -1,11 +1,11 @@
 <script lang="ts">
 	let { elevator, game }: any = $props();
 
-	let floorNumber: number = elevator.floor;
-	let y: string = -1 * (floorNumber - 1) * game.floorHeight + 'px';
+	// let floorNumber: number = $state(elevator.floor);
+	let y: string = $derived(-1 * (elevator.floor - 1) * game.floorHeight + 'px');
 
-	// $inspect(elevator);
-	// $inspect({ floorNumber });
+	$inspect(elevator);
+	$inspect({ y, floor: elevator.floor });
 </script>
 
 <div
@@ -13,7 +13,7 @@
 	style:--numFloors={game.floors.length}
 	style:--floorHeight={game.floorHeight + 'px'}
 >
-	<div class="cab" style:--y={y}>
+	<div class={elevator.movement + ' cab'} style:--y={y}>
 		<div class="floorLights">
 			{#each Array(game.floors.length) as _, i}
 				<span>
@@ -27,7 +27,7 @@
 		<div class="occupantCount">
 			{elevator.occupants.length || ''}
 
-			<br />fl. {floorNumber}
+			<br />fl. {elevator.floor}
 		</div>
 	</div>
 </div>
@@ -50,7 +50,17 @@
 		background-color: rgba(0, 200, 0, 0.5);
 
 		transform: translateY(var(--y));
-		transition: all 0.5s linear;
+		transition: transform 0.5s linear;
+	}
+
+	.cab.null,
+	.cab.idle {
+		background-color: rgba(200, 0, 0, 0.5);
+	}
+
+	.cab.moving,
+	.cab.paused {
+		background-color: rgba(0, 200, 0, 0.5);
 	}
 
 	.floorLights {

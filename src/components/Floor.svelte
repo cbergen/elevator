@@ -2,6 +2,8 @@
 	let { floor, game }: any = $props();
 
 	const numElevators = game.elevators.length;
+
+	$inspect(floor.meepleCount, floor.number);
 </script>
 
 <section

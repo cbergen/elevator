@@ -7,7 +7,7 @@ export class Elevator {
 	public floor: number = $state(1);
 	public destinationFloor: number | null = null;
 	public topFloor: number = 2;
-	public movement: 'idle' | 'moving' | 'paused' = $state('idle');
+	public movement: 'idle' | 'moving' | 'paused' | null = $state(null);
 	public direction: 'up' | 'down' | null = $state(null);
 	public pressedFloors: SvelteSet<number> = $state(new SvelteSet());
 	public occupants: Meeple[] = $state([]);
@@ -28,7 +28,7 @@ export class Elevator {
 
 	public reset = (): void => {
 		this.floor = 1;
-		this.movement = 'idle';
+		this.movement = null;
 		this.direction = null;
 		this.occupants = [];
 		this.pressedFloors.clear();
@@ -81,9 +81,12 @@ export class Elevator {
 		 */
 
 		switch (this.movement) {
-			case 'idle':
-				console.log({ destQeueu: this.destinationQueue.length });
+			case null:
+				this.null_to_idle();
 
+				break;
+
+			case 'idle':
 				// If there are destination floors, transition to the "moving" state
 				if (this.destinationQueue.length > 0) {
 					this.idle_to_moving();
@@ -109,6 +112,8 @@ export class Elevator {
 				break;
 
 			case 'moving':
+				console.log('moving moving', this.floor, this.destinationFloor, this.direction);
+
 				// Transition to the "paused" state if we've arrived at the destination floor
 				if (this.floor === this.destinationFloor) {
 					this.moving_to_paused();
@@ -119,11 +124,29 @@ export class Elevator {
 		}
 	};
 
+	private null_to_idle = (): void => {
+		console.log('null_to_idle');
+
+		// Change the movement state
+		this.movement = 'idle';
+
+		// Trigger the 'idle' event
+		this.idleEvents.forEach((fn) => fn());
+	};
+
 	private idle_to_moving = (): void => {
 		console.log('idle_to_moving');
 
 		// Get the next destination floor
 		const destination = this.destinationQueue.shift() as number;
+
+		// If destination floor is the same as the current floor, skip
+		if (destination === this.floor) {
+			return;
+		}
+
+		// Set the destination floor
+		this.destinationFloor = destination;
 
 		// Set the direction
 		this.direction = destination > this.floor ? 'up' : 'down';
@@ -133,6 +156,8 @@ export class Elevator {
 
 		// TEMP: immediately set the floor to the destination floor (no animation yet)
 		this.floor = destination;
+
+		console.log({ floor: this.floor, destination });
 	};
 
 	private paused_to_moving = (): void => {
@@ -140,6 +165,14 @@ export class Elevator {
 
 		// Get the next destination floor
 		const destination = this.destinationQueue.shift() as number;
+
+		// If destination floor is the same as the current floor, skip
+		if (destination === this.floor) {
+			return;
+		}
+
+		// Set the destination floor
+		this.destinationFloor = destination;
 
 		// Set the direction
 		this.direction = destination > this.floor ? 'up' : 'down';
@@ -149,6 +182,12 @@ export class Elevator {
 
 		// Reset the paused timer
 		this.pauseInterval = 0;
+
+		// TODO: animate the elevator moving and use animation event to trigger end of movement
+		// TEMP: Wait and then set the floor to the destination floor
+		setTimeout(() => {
+			this.floor = destination;
+		}, 1000);
 	};
 
 	private paused_to_idle = (): void => {
@@ -180,30 +219,13 @@ export class Elevator {
 		if (this.floor === 1 || this.floor === this.topFloor) {
 			this.direction = null;
 		}
+
+		// Turn off floor light
+		this.pressedFloors.delete(this.floor);
 	};
 
-	public load = (queue: Meeple[]): Meeple[] => {
-		// Load as many meeples as possible
-		while (this.occupants.length < this.capacity && queue.length > 0) {
-			switch (this.direction) {
-				case null:
-					// The first meeple in the queue enters the elevator
-					this.enter(queue.shift() as Meeple);
-					break;
-				case 'up':
-					if (queue[0].direction === 'up') {
-						this.enter(queue.shift() as Meeple);
-					}
-					break;
-				case 'down':
-					if (queue[0].direction === 'down') {
-						this.enter(queue.shift() as Meeple);
-					}
-					break;
-			}
-		}
-
-		return queue;
+	public hasCapacity = (): boolean => {
+		return this.occupants.length < this.capacity;
 	};
 
 	// Set handlers for all custom elevator events
@@ -220,7 +242,13 @@ export class Elevator {
 		}
 	};
 
-	private enter = (meeple: Meeple): void => {
+	public load = (meeple: Meeple): void => {
+		console.log({
+			meeple,
+			occupants: this.occupants,
+			pressedFloors: this.pressedFloors
+		});
+
 		// TODO: animate the meeple entering the elevator
 
 		// Set the meeple's location to 'elevator'
@@ -233,6 +261,14 @@ export class Elevator {
 		if (!this.pressedFloors.has(meeple.destination)) {
 			this.pushFloorButton(meeple.destination);
 		}
+	};
+
+	public unload = (meeple: Meeple): void => {
+		// Set the meeple's location to 'gone'
+		meeple.location = 'gone';
+
+		// Remove the meeple from the occupants array
+		this.occupants = this.occupants.filter((occ) => occ !== meeple);
 	};
 
 	private goToFloor = (floor: number): void => {
