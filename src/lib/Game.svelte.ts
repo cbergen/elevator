@@ -11,6 +11,7 @@ export class Game {
 	// Game stats
 	public elapsedTime: number = $state(0);
 	public longestTimeWaiting: number = $state(0);
+	public trips: number = $state(0);
 
 	// Loop variables
 	private intervalID: number = 0;
@@ -41,6 +42,7 @@ export class Game {
 		for (let i = 0; i < opts.numElevators; i++) {
 			this.elevators.push(
 				new Elevator({
+					index: i,
 					topFloor: opts.numFloors
 				})
 			);
@@ -79,6 +81,7 @@ export class Game {
 		this.intervalID = 0;
 		this.elapsedTime = 0;
 		this.longestTimeWaiting = 0;
+		this.trips = 0;
 		this.lastRunTime = 0;
 		this.elapsedSinceSpawn = 0;
 		this.meeples = [];
@@ -126,6 +129,12 @@ export class Game {
 		this.elevators.forEach((elevator) => {
 			elevator.update(deltaTime);
 		});
+
+		// Update stats
+		this.trips = this.meeples.reduce(
+			(acc, meeple) => acc + (meeple.location === 'gone' ? 1 : 0),
+			0
+		);
 	};
 
 	private render = (): void => {

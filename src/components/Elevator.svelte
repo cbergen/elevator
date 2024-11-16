@@ -1,11 +1,11 @@
 <script lang="ts">
 	let { elevator, game }: any = $props();
 
-	// let floorNumber: number = $state(elevator.floor);
-	let y: string = $derived(-1 * (elevator.floor - 1) * game.floorHeight + 'px');
+	let floor: number = $derived(
+		elevator.movement === 'moving' ? elevator.destinationFloor : elevator.floor
+	);
 
-	$inspect(elevator);
-	$inspect({ y, floor: elevator.floor });
+	let y: string = $derived(-1 * (floor - 1) * game.floorHeight + 'px');
 </script>
 
 <div
@@ -26,8 +26,6 @@
 
 		<div class="occupantCount">
 			{elevator.occupants.length || ''}
-
-			<br />fl. {elevator.floor}
 		</div>
 	</div>
 </div>
@@ -50,7 +48,7 @@
 		background-color: rgba(0, 200, 0, 0.5);
 
 		transform: translateY(var(--y));
-		transition: transform 0.5s linear;
+		transition: transform 0.5s ease-in-out;
 	}
 
 	.cab.null,

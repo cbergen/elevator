@@ -6,17 +6,24 @@
 
 	let value = $state(`{
     init: function(elevators, floors) {
-        var elevator = elevators[0]; // Let's use the first elevator
-
-        // Whenever the elevator is idle (has no more queued destinations) ...
+        let elevator = elevators[1];
         elevator.on("idle", function() {
-            console.log('on:idle');
+            console.log('on:idle', 'elevator', this.index);
+            this.goToFloor(1);
+            this.goToFloor(2);
+            this.goToFloor(3);
+            this.goToFloor(4);
+            this.goToFloor(5);
+        });
 
-            // let's go to all the floors (or did we forget one?)
-            elevator.goToFloor(1);
-            elevator.goToFloor(2);
-            elevator.goToFloor(3);
-            elevator.goToFloor(4);
+        elevator = elevators[0];
+        elevator.on("idle", function() {
+            console.log('on:idle', 'elevator', this.index);
+            this.goToFloor(5);
+            this.goToFloor(4);
+            this.goToFloor(3);
+            this.goToFloor(2);
+            this.goToFloor(1);
         });
     }
 }`);

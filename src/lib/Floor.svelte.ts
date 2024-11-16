@@ -54,33 +54,37 @@ export class Floor {
 	};
 
 	public maybeLoadElevators = (elevators: Elevator[]): void => {
-		elevators.forEach((elevator) => {
-			// If the queue is empty, skip
-			if (this.queue.length === 0) {
-				return;
-			}
+		this.queue.forEach((meeple) => {
+			// randomize the order of elevators in case there are multiple elevators at the same floor
+			elevators = elevators.sort(() => Math.random() - 0.5);
 
-			// If elevator is moving, skip
-			if (elevator.movement === 'moving') {
-				return;
-			}
+			elevators.some((elevator) => {
+				// If elevator is moving, skip
+				if (elevator.movement === 'moving') {
+					return;
+				}
 
-			// If elevator is not stopped at this floor, skip
-			if (elevator.floor !== this.number) {
-				return;
-			}
+				// If elevator is not stopped at this floor, skip
+				if (elevator.floor !== this.number) {
+					return;
+				}
 
-			// Try to load the elevator
-			if (elevator.hasCapacity()) {
-				this.queue.forEach((meeple) => {
-					if (elevator.direction === null || elevator.direction === meeple.direction) {
-						elevator.load(meeple);
+				// If elevator is full, skip
+				if (elevator.hasCapacity() === false) {
+					return;
+				}
 
-						// Remove the meeple from the queue
-						this.queue = this.queue.filter((m) => m !== meeple);
-					}
-				});
-			}
+				// Try to load the elevator
+				if (elevator.direction === null || elevator.direction === meeple.direction) {
+					elevator.load(meeple);
+
+					// Remove the meeple from the queue
+					this.queue = this.queue.filter((m) => m !== meeple);
+
+					// Return true to break out of the loop
+					return true;
+				}
+			});
 		});
 	};
 

@@ -19,6 +19,11 @@
 		<dt>Longest time waiting</dt>
 		<dd>{formatElapsedTime(game.longestTimeWaiting)}</dd>
 	</div>
+
+	<div>
+		<dt>Completed trips</dt>
+		<dd>{game.trips}</dd>
+	</div>
 </dl>
 
 <style>

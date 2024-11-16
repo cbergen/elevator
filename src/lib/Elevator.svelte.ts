@@ -4,6 +4,7 @@ import { SvelteSet } from 'svelte/reactivity';
 // TODO: use anime.js to animate the elevator
 
 export class Elevator {
+	public index: number = 0;
 	public floor: number = $state(1);
 	public destinationFloor: number | null = null;
 	public topFloor: number = 2;
@@ -22,12 +23,14 @@ export class Elevator {
 
 	private idleEvents: Callback[] = [];
 
-	constructor(opts: { topFloor: number }) {
+	constructor(opts: { index: number; topFloor: number }) {
+		this.index = opts.index;
 		this.topFloor = opts.topFloor;
 	}
 
 	public reset = (): void => {
 		this.floor = 1;
+		this.destinationFloor = null;
 		this.movement = null;
 		this.direction = null;
 		this.occupants = [];
@@ -112,7 +115,7 @@ export class Elevator {
 				break;
 
 			case 'moving':
-				console.log('moving moving', this.floor, this.destinationFloor, this.direction);
+				// console.log('moving moving', this.floor, this.destinationFloor, this.direction);
 
 				// Transition to the "paused" state if we've arrived at the destination floor
 				if (this.floor === this.destinationFloor) {
@@ -125,13 +128,15 @@ export class Elevator {
 	};
 
 	private null_to_idle = (): void => {
-		console.log('null_to_idle');
+		console.log('null_to_idle', { elevator: this.index });
 
 		// Change the movement state
 		this.movement = 'idle';
 
 		// Trigger the 'idle' event
 		this.idleEvents.forEach((fn) => fn());
+
+		// console.log({ events: this.idleEvents });
 	};
 
 	private idle_to_moving = (): void => {
@@ -154,8 +159,11 @@ export class Elevator {
 		// Change the movement state
 		this.movement = 'moving';
 
-		// TEMP: immediately set the floor to the destination floor (no animation yet)
-		this.floor = destination;
+		// TODO: animate the elevator moving and use animation event to trigger end of movement
+		// TEMP: Wait and then set the floor to the destination floor
+		setTimeout(() => {
+			this.floor = destination;
+		}, 500);
 
 		console.log({ floor: this.floor, destination });
 	};
@@ -187,7 +195,7 @@ export class Elevator {
 		// TEMP: Wait and then set the floor to the destination floor
 		setTimeout(() => {
 			this.floor = destination;
-		}, 1000);
+		}, 500);
 	};
 
 	private paused_to_idle = (): void => {
@@ -204,6 +212,8 @@ export class Elevator {
 
 		// Trigger the 'idle' event
 		this.idleEvents.forEach((fn) => fn());
+
+		console.log({ events: this.idleEvents });
 	};
 
 	private moving_to_paused = (): void => {
@@ -237,16 +247,15 @@ export class Elevator {
 
 		switch (event) {
 			case 'idle':
-				this.idleEvents.push(fn);
+				// console.log({ fn: fn.toString() });
+				this.idleEvents.push(fn.bind(this));
 				break;
 		}
 	};
 
 	public load = (meeple: Meeple): void => {
 		console.log({
-			meeple,
-			occupants: this.occupants,
-			pressedFloors: this.pressedFloors
+			'Loading meeple': meeple
 		});
 
 		// TODO: animate the meeple entering the elevator
@@ -272,7 +281,7 @@ export class Elevator {
 	};
 
 	private goToFloor = (floor: number): void => {
-		console.log('Going to floor:', floor);
+		console.log('Going to floor:', { floor: floor, elevator: this.index });
 		this.destinationQueue.push(floor);
 	};
 
